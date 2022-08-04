@@ -1,0 +1,148 @@
+---
+title: "Constitute data base of journalists"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidytext)
+library(dplyr)
+library(stopwords)
+library(ggplot2)
+library(lubridate)
+library(stringr) # str_detect
+library(rtweet)
+library(Dict)
+readRenviron("~/.Renviron")
+
+# auth <- rtweet_app()
+# access_token <- "AAAAAAAAAAAAAAAAAAAAAIcKLwEAAAAA9Ve0dVTIyaecdx0XwYfOpoLYQek%3D9g08wPfTo0IQSPu16Ysj0aYpXkr11ETwzN9ZFhNcvCx3lC5RQl"
+```
+
+```{r}
+fishing.probable.journalists <- load("./fishing.RData")
+```
+
+
+```{r}
+# get data on those accounts
+cnn_fds_data <- lookup_users(fishing.probable.journalists$user_id, parse = F)
+```
+
+```{r}
+fishing.probable.journalists.with.description <- data.frame("screen_name" = c(),
+                                                            "description" = c(),
+                                                            "name" = c(),
+                                                            "followers_count" = c(),
+                                                            "created_at" = c(),
+                                                            "location" = c())
+
+for (i in 1:length(cnn_fds_data)){
+  probable.journalist.desc <- cnn_fds_data[[i]]
+  fishing.probable.journalists.with.description <- rbind(fishing.probable.journalists.with.description, probable.journalist.desc[, c("screen_name", "description", "name", "followers_count", "created_at",  "location")])
+}
+
+```
+
+```{r}
+fishing.probable.journalists.with.description
+```
+
+
+```{r}
+fishing.probable.journalists.with.description.wo.rep <- distinct(fishing.probable.journalists.with.description)
+```
+
+
+```{r}
+# batch of words we are considering
+words.indicating.potential.journalist <- c("Journaliste", "Chroniqueur", "Chroniqueuse", "Editorialiste", "Éditorialiste", "Reporter", "Rédaction", "Correspondant", "Correspondante", "Rédacteur en chef", "Rédactrice en chef")
+
+words.indicating.potential.journalist <- c(words.indicating.potential.journalist, tolower(words.indicating.potential.journalist))
+
+fishing.probable.journalists.with.description.wo.rep$has.word.for.journalist <- rep(FALSE, nrow(fishing.probable.journalists.with.description.wo.rep))
+
+for (word in words.indicating.potential.journalist){
+  
+  has.the.word <- str_detect(fishing.probable.journalists.with.description.wo.rep$description, word)
+  
+  # keep detailed information
+  fishing.probable.journalists.with.description.wo.rep[, word] <- as.integer(has.the.word)
+  
+  fishing.probable.journalists.with.description.wo.rep[has.the.word  , "has.word.for.journalist"] <- rep(TRUE, sum(as.integer(has.the.word)))
+  
+}
+```
+
+
+
+```{r}
+probable.journalist <- fishing.probable.journalists.with.description.wo.rep[fishing.probable.journalists.with.description.wo.rep$has.word.for.journalist, c("screen_name", "description", "name", "followers_count", "created_at",  "location")]
+```
+
+```{r}
+write.csv(probable.journalist[10:15,], "./examples_illustration.csv")
+```
+
+Now, try to affect a newspaper when possible.
+
+
+```{r}
+redactions <- Dict$new(
+  LeMonde = c("@LeMonde", "Le Monde", "@lemondefr", "le monde", "#LeMonde", "@lemonde_pol", "#lemonde", "@decodeurs"),
+  LeFig = c("@Le_Figaro", "@FigaroVox", "@Figaro", "Figaro", "FigaroVox", "#Figaro"),
+  Libe = c("@libe", "@Libe", "Libé", "Libération", "Liberation", "liberation"),
+  Mediapart = c("Mediapart", "@Mediapart", "Médiapart", "@mediapart", "@MediapartBlogs", "mediapart"),
+  Point = c("@LePoint", "Le Point", "Le point", "Point"),
+  Valeur = c("@Valeurs", "VA", "@VAplus_", "Valeurs actuelles"),
+  Obs = c("@lobs", "L'Obs", "Le nouvel observateur", "lenouvelobservateur"),
+  Marianne = c("@Marianne_TVoff", "@MarianneleMag", "Marianne"),
+  AFP = c("AFP", "@afpfr", "Agence France-Presse"),
+  Blast = c("@blast_france", "Blast", "BLAST"),
+  Cnews = c("@CNEWS", "@CNews", "Cnews", "CNEWS", "@cnews"),
+  Express = c("@LEXPRESS", "L'Express", "Express", "l'express"),
+  Inter = c("France Inter", "@franceinter", "@franceinfo", "Inter"),
+  Europe = c("@Europe1", "Europe 1", "europe1", "#Europe1"),
+  BFM = c("BFM", "@BFMTV", "BFMTV", "@bfmtv"),
+  Lacroix = c("@LaCroix", "LaCroix", "La Croix", "la croix"),
+  Parisien = c("@le_Parisien", "Le Parisien", "le parisien"),
+  LaProvence = c("La Provence", "@laprovence", "@LaProvence", "#laprovence", "#LaProvence"),
+  OuestFrance = c("@OuestFrance", "Ouest-France", "ouest-france"),
+  VoixDuNord = c("@lavoixdunord", "lavoixdunord.fr", "La Voix du Nord", "La Voix Du Nord", "la voix du nord", "Voix du Nord"),
+  LeProgres = c("@Le_Progres", "Le Progrès", "Le Progres", "Le progres", "leprogres.fr"),
+  SudOuest = c("Sud Ouest", "@SO_Paysbasque", "#SO_Paysbasque", "sudouest.fr"),
+  DauphineLibere = c("@ledauphine", "#dauphinelibere", "Le Dauphiné Libéré", "Le Dauphiné", "Dauphiné Libéré"),
+  EstRep = c("@lestrepublicain", "L'Est Républicain", "@LEstRepNancy"))
+```
+
+
+```{r}
+number.of.probable.journalists <- nrow(probable.journalist)
+
+
+for (redaction in redactions$keys){
+  
+  probable.journalist[, redaction] <- rep(0, number.of.probable.journalists)
+  
+  for (word in redactions[redaction]){
+    has.the.word <- as.integer(str_detect(probable.journalist$description, word))
+    probable.journalist[, redaction] <- probable.journalist[, redaction] + has.the.word
+  }
+}
+```
+
+
+
+```{r}
+probable.journalist
+```
+
+```{r}
+# library(UpSetR)
+# upset(probable.journalist[, 5:23], nsets = 9)
+```
+
+```{r}
+save(probable.journalist, file = "./batch4.RData")
+```
