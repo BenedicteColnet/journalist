@@ -1,0 +1,57 @@
+---
+title: "Fishing from seed"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidytext)
+library(dplyr)
+library(stopwords)
+library(ggplot2)
+library(lubridate)
+library(stringr) # str_detect
+library(rtweet)
+library(Dict)
+readRenviron("~/.Renviron")
+
+auth <- rtweet_app()
+# access_token <- "AAAAAAAAAAAAAAAAAAAAAIcKLwEAAAAA9Ve0dVTIyaecdx0XwYfOpoLYQek%3D9g08wPfTo0IQSPu16Ysj0aYpXkr11ETwzN9ZFhNcvCx3lC5RQl"
+```
+
+We start from a list of journalists from different newspapers.
+
+```{r}
+journalists.seed <- read.csv("./journalistes.csv", sep = ";")
+```
+
+```{r}
+# get someone's friends (followers IDs)
+fishing.probable.journalists <- data.frame("user" = c(),
+                                           "user_id" = c())
+
+count = 0
+
+# because of limits, it is not possible to fish everyone from the table directly. 
+# Recommend batch of 10 people maximum
+for (journalist in journalists.seed$pseudo){
+  
+  if (count < 10){
+    count = count + 1
+    fds <- get_friends(journalist)
+    fishing.probable.journalists <- rbind(fishing.probable.journalists, fds)
+  } else {
+    date_time <- Sys.time()
+    while((as.numeric(Sys.time()) - as.numeric(date_time))< 16*60){} # dummy while loop waiting 16 minutes
+  }
+}
+
+```
+
+```{r}
+# store data
+fishing.probable.journalists <- distinct(fishing.probable.journalists)
+save(fishing.probable.journalists, file = "./fishing.RData")
+```
+
