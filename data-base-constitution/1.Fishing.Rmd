@@ -23,7 +23,7 @@ auth <- rtweet_app()
 We start from a list of journalists from different newspapers.
 
 ```{r}
-journalists.seed <- read.csv("./journalistes.csv", sep = ";")
+journalists.seed <- read.csv("../data/journalistes.csv", sep = ";")
 ```
 
 ```{r}
@@ -34,16 +34,35 @@ fishing.probable.journalists <- data.frame("user" = c(),
 count = 0
 
 # because of limits, it is not possible to fish everyone from the table directly. 
-# Recommend batch of 10 people maximum
+# Recommend batch of 5 people maximum
+# indeed, apparently , retryonratelimit = TRUE was not working so well
 for (journalist in journalists.seed$pseudo){
   
-  if (count < 10){
+  if (count < 6){
+    
     count = count + 1
-    fds <- get_friends(journalist)
+    
+    print(paste0("doing ", journalist))
+    fds <- get_friends(journalist, retryonratelimit = TRUE)
     fishing.probable.journalists <- rbind(fishing.probable.journalists, fds)
+    
+    
   } else {
+    
     date_time <- Sys.time()
-    while((as.numeric(Sys.time()) - as.numeric(date_time))< 16*60){} # dummy while loop waiting 16 minutes
+    print(paste0("starting the break at ", date_time))
+    
+    # start the nap!
+    Sys.sleep(16*60)  
+    
+    print(paste0("ending the break at ", date_time))
+    
+    print(paste0("doing ", journalist))
+    fds <- get_friends(journalist, retryonratelimit = TRUE)
+    fishing.probable.journalists <- rbind(fishing.probable.journalists, fds)
+    
+    # start again
+    count = 1
   }
 }
 
