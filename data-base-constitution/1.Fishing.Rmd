@@ -36,9 +36,9 @@ count = 0
 # because of limits, it is not possible to fish everyone from the table directly. 
 # Recommend batch of 5 people maximum
 # indeed, apparently , retryonratelimit = TRUE was not working so well
-for (journalist in journalists.seed$pseudo){
+for (journalist in journalists.seed$pseudo[13:71]){
   
-  if (count < 6){
+  if (count < 4){
     
     count = count + 1
     
@@ -55,6 +55,7 @@ for (journalist in journalists.seed$pseudo){
     # start the nap!
     Sys.sleep(16*60)  
     
+    date_time <- Sys.time()
     print(paste0("ending the break at ", date_time))
     
     print(paste0("doing ", journalist))
@@ -69,8 +70,12 @@ for (journalist in journalists.seed$pseudo){
 ```
 
 ```{r}
-# store data
+# 108078 contacts
 fishing.probable.journalists <- distinct(fishing.probable.journalists)
-save(fishing.probable.journalists, file = "./fishing.RData")
+```
+
+```{r}
+# store data
+save(fishing.probable.journalists, file = "./fishing2.RData")
 ```
 

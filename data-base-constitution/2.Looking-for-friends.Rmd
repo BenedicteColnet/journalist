@@ -16,20 +16,29 @@ library(rtweet)
 library(Dict)
 readRenviron("~/.Renviron")
 
-# auth <- rtweet_app()
+auth <- rtweet_app()
 # access_token <- "AAAAAAAAAAAAAAAAAAAAAIcKLwEAAAAA9Ve0dVTIyaecdx0XwYfOpoLYQek%3D9g08wPfTo0IQSPu16Ysj0aYpXkr11ETwzN9ZFhNcvCx3lC5RQl"
 ```
 
 ```{r}
-fishing.probable.journalists <- load("./fishing.RData")
+load("../data/fishing.RData")
+fishing.probable.journalists.1 <- fishing.probable.journalists
+load("../data/fishing2.RData")
+fishing.probable.journalists <- rbind(fishing.probable.journalists, fishing.probable.journalists.1)
+rm(fishing.probable.journalists.1)
 ```
 
+How many different people?
+
+```{r}
+friends.of.journalist.ids <- unique(fishing.probable.journalists$ids)
+length(friends.of.journalist.ids)
+```
 
 ```{r}
 # get data on those accounts
-cnn_fds_data <- lookup_users(fishing.probable.journalists$user_id, parse = F)
+cnn_fds_data <- lookup_users(friends.of.journalist.ids, parse = F)
 ```
-
 ```{r}
 fishing.probable.journalists.with.description <- data.frame("screen_name" = c(),
                                                             "description" = c(),
@@ -49,44 +58,40 @@ for (i in 1:length(cnn_fds_data)){
 fishing.probable.journalists.with.description
 ```
 
-
-```{r}
-fishing.probable.journalists.with.description.wo.rep <- distinct(fishing.probable.journalists.with.description)
-```
-
-
 ```{r}
 # batch of words we are considering
 words.indicating.potential.journalist <- c("Journaliste", "Chroniqueur", "Chroniqueuse", "Editorialiste", "Éditorialiste", "Reporter", "Rédaction", "Correspondant", "Correspondante", "Rédacteur en chef", "Rédactrice en chef")
 
 words.indicating.potential.journalist <- c(words.indicating.potential.journalist, tolower(words.indicating.potential.journalist))
 
-fishing.probable.journalists.with.description.wo.rep$has.word.for.journalist <- rep(FALSE, nrow(fishing.probable.journalists.with.description.wo.rep))
+fishing.probable.journalists.with.description$has.word.for.journalist <- rep(FALSE, nrow(fishing.probable.journalists.with.description))
 
 for (word in words.indicating.potential.journalist){
   
-  has.the.word <- str_detect(fishing.probable.journalists.with.description.wo.rep$description, word)
+  has.the.word <- str_detect(fishing.probable.journalists.with.description$description, word)
   
   # keep detailed information
-  fishing.probable.journalists.with.description.wo.rep[, word] <- as.integer(has.the.word)
+  fishing.probable.journalists.with.description[, word] <- as.integer(has.the.word)
   
-  fishing.probable.journalists.with.description.wo.rep[has.the.word  , "has.word.for.journalist"] <- rep(TRUE, sum(as.integer(has.the.word)))
+  fishing.probable.journalists.with.description[has.the.word  , "has.word.for.journalist"] <- rep(TRUE, sum(as.integer(has.the.word)))
   
 }
 ```
 
+```{r}
+table(fishing.probable.journalists.with.description$has.word.for.journalist)
+```
 
 
 ```{r}
-probable.journalist <- fishing.probable.journalists.with.description.wo.rep[fishing.probable.journalists.with.description.wo.rep$has.word.for.journalist, c("screen_name", "description", "name", "followers_count", "created_at",  "location")]
+probable.journalist <- fishing.probable.journalists.with.description[fishing.probable.journalists.with.description$has.word.for.journalist, c("screen_name", "description", "name", "followers_count", "created_at",  "location")]
 ```
 
 ```{r}
-write.csv(probable.journalist[10:15,], "./examples_illustration.csv")
+write.csv(probable.journalist[10:15,], "../data/examples_illustration.csv")
 ```
 
 Now, try to affect a newspaper when possible.
-
 
 ```{r}
 redactions <- Dict$new(
@@ -132,17 +137,24 @@ for (redaction in redactions$keys){
 }
 ```
 
-
-
 ```{r}
 probable.journalist
 ```
 
 ```{r}
-# library(UpSetR)
-# upset(probable.journalist[, 5:23], nsets = 9)
+table(probable.journalist$LeMonde)
+```
+
+
+```{r}
+library(UpSetR)
 ```
 
 ```{r}
-save(probable.journalist, file = "./batch4.RData")
+upset(probable.journalist[, redactions$keys], nsets = 15)
+```
+
+
+```{r}
+save(probable.journalist, file = "../data/journalist-and-description.RData")
 ```
