@@ -1,0 +1,38 @@
+---
+title: "5.Analysis"
+output: html_document
+date: "2023-02-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FactoMineR)
+library("factoextra")
+```
+
+```{r}
+tidy.text <- read.csv("../output/count-mot.csv")
+row.names(tidy.text) = tidy.text[, 2]
+tidy.text <- tidy.text[, 3:16]
+```
+
+
+```{r}
+twitter.ca <- CA(tidy.text[1:1000,], graph = F)
+```
+
+
+```{r}
+plot(twitter.ca, invisible = c("row"))
+```
+
+
+
+```{r}
+fviz_ca_col(twitter.ca, col.col = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+```
+
+

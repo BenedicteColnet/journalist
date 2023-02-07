@@ -34,7 +34,6 @@ fishing.probable.journalists <- data.frame("user" = c(),
 count = 0
 
 # because of limits, it is not possible to fish everyone from the table directly. 
-# Recommend batch of 5 people maximum
 # indeed, apparently , retryonratelimit = TRUE was not working so well
 for (journalist in journalists.seed$pseudo[13:71]){
   

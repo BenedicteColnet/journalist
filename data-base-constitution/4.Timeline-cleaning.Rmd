@@ -1,0 +1,170 @@
+---
+title: "Cleaning timeline"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidytext)
+library(dplyr)
+library(gutenbergr) # new
+library(tidystopwords) # new
+library(tidyr)
+library(stopwords)
+library(ggplot2)
+library(SnowballC)
+library(stringi)
+library(Dict)
+library(Xplortext)
+library(DescTools)
+library(stringr)
+library(FactoMineR)
+library(qdapRegex)
+
+source("./param.R")
+```
+
+
+```{r}
+# info on journalists
+load(file = "../data/journalist-and-description.RData")
+```
+
+
+```{r}
+# timelines
+files  <- list.files(path = "../data/test/", pattern = '\\.RData')
+
+print(paste0("Reading: ", files[1]))
+load(paste0("../data/test/", files[1]))
+all_data <- timeline
+print(paste0("Size :", nrow(all_data)))
+
+
+
+for (file in files[2:length(files)]){
+  print(paste0("Reading: ", file))
+  load(paste0("../data/test/", file))
+  print(paste0("Size :", nrow(timeline)))
+  all_data <- rbind(all_data, timeline)
+}
+
+
+```
+
+```{r}
+print(paste0("Number of tweets: ", nrow(all_data)))
+all_data <- unique(all_data)
+print(paste0("Number of unique tweets: ", nrow(all_data)))
+```
+
+
+```{r}
+# Add year, month, day column
+all_data$year <- stri_sub(all_data$created_at, -4)
+all_data$month <- stri_sub(all_data$created_at, from = 4, to = 7)
+all_data$day <- stri_sub(all_data$created_at, from = 9, to = 10)
+
+# Keep only relevant columns 
+all_data <- all_data[, c("created_at", "id", "full_text", "is_quote_status", "favorite_count", "retweet_count", "lang", "retweeted", "year", "month", "day", "screen_name")]
+```
+
+```{r}
+# Only keep tweets in french
+all_data <- all_data[all_data$lang == "fr",]
+print(paste0("Number of tweets after keeping only french tweets: ", nrow(all_data)))
+```
+
+```{r}
+# delete urls
+all_data$treated.text <- gsub("http[^[:space:]]*", "", all_data$full_text)
+```
+
+
+```{r}
+# delete words or tag referring to the newspapper
+for (redaction in redactions$keys){
+  for (tag in redaction){
+    all_data$treated.text <- gsub(tag, "", all_data$treated.text)
+  }
+}
+```
+
+
+```{r}
+# change the @Homme.Politique by Homme Politique
+
+```
+
+
+
+```{r}
+# delete all word starting with a @
+all_data$treated.text <- gsub("@\\w+ *", "", all_data$treated.text)
+```
+
+
+```{r}
+# remove emoji and non word like ;) with package qdapRegex
+all_data$treated.text <- rm_non_words(all_data$treated.text)
+```
+
+
+```{r}
+all_data$treated.text[14001]
+all_data$full_text[14001]
+```
+
+```{r}
+# add redaction and duplicate text if necessary
+journalist.and.redaction <- probable.journalist[, c("screen_name", "name", redactions$keys)]
+journalist.and.redaction <- journalist.and.redaction %>%
+  pivot_longer(cols = redactions$keys, names_to = "journal", values_to = "is.in.journal")
+
+journalist.and.redaction <- journalist.and.redaction[journalist.and.redaction$is.in.journal == 1,]
+
+all_data <- merge(journalist.and.redaction, all_data, by = "screen_name", all.x = T)
+```
+
+
+```{r}
+# Création d'une base de mots vides
+mots_vides <- tibble(mot = stopwords('fr'))
+mots_vides <- rbind(mots_vides, data.frame("mot" = c("a", "h", "tf", "si", "ça", "à")))
+
+timeline.to.tidy.text <- all_data[, c("screen_name", "year", "month", "day", "treated.text", "journal")] %>%
+   mutate(treated.text = stringr::str_replace_all(.$treated.text, "’", " ")) %>% 
+   unnest_tokens(mot, treated.text) %>%
+  anti_join(mots_vides) %>%
+  mutate(lemme = wordStem(mot, language = "fr"))
+```
+
+```{r}
+timeline.to.tidy.text <- na.omit(timeline.to.tidy.text)
+```
+
+
+```{r}
+timeline.to.count <- timeline.to.tidy.text %>% 
+  group_by(journal, lemme) %>% 
+  summarise(count = n())
+
+timeline.to.count <- timeline.to.count %>%
+  pivot_wider(names_from = "journal", values_from = "count", values_fill = 0 )
+
+save(timeline.to.count, file = "../data/count-lemme.RData")
+
+
+
+timeline.to.count <- timeline.to.tidy.text %>% 
+  group_by(journal, mot) %>% 
+  summarise(count = n())
+
+timeline.to.count <- timeline.to.count %>%
+  pivot_wider(names_from = "journal", values_from = "count", values_fill = 0 )
+
+save(timeline.to.count, file = "../data/count-mot.RData")
+```
+
+
