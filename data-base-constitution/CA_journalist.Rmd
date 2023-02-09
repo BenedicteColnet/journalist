@@ -1,0 +1,87 @@
+---
+title: "Analyse des tweets"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FactoMineR)
+```
+
+# Etude sur les proximités entre rédactions
+
+On peut visualiser des proximités entre rédactions du point de vue des journalistes qui appartiennent à plusieurs rédactions (ou qui ont évolué d'une rédaction à une autre). On crée donc un tableau de contingence croisant les rédactions entre elles, et qui donne dans une case le nombre de journalistes qui appartiennent simultanément à la rédaction i et la rédaction j.
+
+```{r}
+load("../data/journalist-and-description.RData")
+don <- probable.journalist[,-(1:6)]
+don[don>0] <- 1  ## recode les valeurs du tableau supérieure ou égale à 2
+don <- don[which(apply(don,1,sum)>1),] ## supprime journaliste dans une seule rédaction
+don <- t(don)
+don <- don[sort(rownames(don)),] ### tri des rédactions par ordre alphabétique
+media <- c("J","TV","TV","TV","J","J","Radio","J","Radio","J","J","J","J","J","J","J","J","J","J","J","J","J","J","J")
+national <- rep("y",nrow(don))
+national[c(5,6,10,13,19,20,22,24)] <- "n"
+select <- which(apply(don,1,sum)>3) ## supprime les rédactions qui ont moins de 3 journalistes
+media <- media[select]
+don <- don[select,] 
+```
+
+```{r}
+distRedaction=don%*%t(don)
+resCA=CA(distRedaction,graph=FALSE)
+plot(resCA,invisible="col",cex=.7)
+```
+
+En ne travaillant que sur les rédactions de la presse papier
+
+```{r}
+resCA=CA(distRedaction[which(media=="J"),which(media=="J")],graph=FALSE)
+plot(resCA,invisible="col", cex=.7)
+```
+
+En ne travaillant que sur les rédactions de la presse papier, sans Valeur qui est très particulier.
+
+```{r}
+resCA2=CA(distRedaction[which(media=="J"& rownames(distRedaction)!="Valeur"),which(media=="J"&colnames(distRedaction)!="Valeur")],graph=FALSE)
+plot(resCA2,invisible="col",cex=.7)
+```
+
+# Comparaison des rédaction à partir du vocabulaire utilisé dans les tweets
+
+```{r}
+PathAdress <- "C:/Users/husson/AOBox/Travail/Bureau/journalist-main/data"
+MotJournaux <- read.table(paste0(PathAdress,"/count-lemme-journal.csv"),header = TRUE,sep=",",encoding="UTF-8",row.names=1)
+MotJournaux <- read.table(paste0(PathAdress,"/count-mot-journal.csv"),header = TRUE,sep=",",encoding="UTF-8",row.names=1)
+rownames(MotJournaux) <- MotJournaux[,1]
+MotJournaux <- t(MotJournaux[,-1])
+media <- c("J","TV","TV","TV","J","J","Radio","J","Radio","J","J","J","J","J","J","J","J","J","J","J","J","J","J","J")
+national <- rep("y",nrow(MotJournaux))
+national[c(5,6,11,14,19,20,22,24)] <- "n"
+```
+
+```{r}
+nbfois <- 10
+mot10 <- MotJournaux[,which(apply(MotJournaux,2,sum)>=nbfois)] ## mot cités plus de nbfois
+nbredac <- 2
+selectRedac <- which(national=="y")
+selectRedac <- setdiff(selectRedac,which(rownames(mot10)%in%c("Valeur","Lacroix"))) ## ces 2 journaux sont très particuliers
+matMot <- mot10[selectRedac,]
+
+matMot <- matMot[,which(apply(matMot,2,sum)>0)] ## supprime mots non utilisés
+selectMots <- which(apply(matMot>0,2,sum)>=nbredac)
+matMot <- matMot[,selectMots] ## mots cités par au moins nbredac rédactions
+```
+
+```{r}
+resCA <- CA(matMot,graph=FALSE)
+plot(resCA, invisible="col",cex=.5)
+```
+
+```{r}
+reshc <- HCPC(resCA,cluster.CA = "rows",graph=FALSE,nb.clust = -1,description=FALSE)
+oo = catdes(cbind.data.frame(reshc$data.clust[ncol(reshc$data.clus)],mot10[selectRedac,]),1,proba=0.001)
+```
+
+
