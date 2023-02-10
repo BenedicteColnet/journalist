@@ -16,6 +16,8 @@ library(rtweet)
 library(Dict)
 readRenviron("~/.Renviron")
 
+source("./param.R")
+
 auth <- rtweet_app()
 # access_token <- "AAAAAAAAAAAAAAAAAAAAAIcKLwEAAAAA9Ve0dVTIyaecdx0XwYfOpoLYQek%3D9g08wPfTo0IQSPu16Ysj0aYpXkr11ETwzN9ZFhNcvCx3lC5RQl"
 ```
@@ -39,7 +41,6 @@ length(friends.of.journalist.ids)
 # get data on those accounts
 cnn_fds_data <- lookup_users(friends.of.journalist.ids, parse = F)
 ```
-
 
 ```{r}
 fishing.probable.journalists.with.description <- data.frame("screen_name" = c(),
@@ -94,35 +95,6 @@ write.csv(probable.journalist[10:15,], "../data/examples_illustration.csv")
 ```
 
 Now, try to affect a newspaper when possible.
-
-```{r}
-redactions <- Dict$new(
-  LeMonde = c("@LeMonde", "Le Monde", "@lemondefr", "le monde", "#LeMonde", "@lemonde_pol", "#lemonde", "@decodeurs", "Monde"),
-  LeFig = c("@Le_Figaro", "@FigaroVox", "@Figaro", "Figaro", "FigaroVox", "#Figaro"),
-  Libe = c("@libe", "@Libe", "Libé", "Libération", "Liberation", "liberation"),
-  Mediapart = c("Mediapart", "@Mediapart", "Médiapart", "@mediapart", "@MediapartBlogs", "mediapart"),
-  Point = c("@LePoint", "Le Point", "Le point", "Point"),
-  Valeur = c("@Valeurs", "VA", "@VAplus_", "Valeurs actuelles"),
-  Obs = c("@lobs", "L'Obs", "Le nouvel observateur", "lenouvelobservateur"),
-  Marianne = c("@Marianne_TVoff", "@MarianneleMag", "Marianne"),
-  AFP = c("AFP", "@afpfr", "Agence France-Presse"),
-  Blast = c("@blast_france", "Blast", "BLAST"),
-  Cnews = c("@CNEWS", "@CNews", "Cnews", "CNEWS", "@cnews"),
-  Express = c("@LEXPRESS", "L'Express", "Express", "l'express"),
-  Inter = c("France Inter", "@franceinter", "@franceinfo", "Inter"),
-  Europe = c("@Europe1", "Europe 1", "europe1", "#Europe1"),
-  BFM = c("BFM", "@BFMTV", "BFMTV", "@bfmtv"),
-  Lacroix = c("@LaCroix", "LaCroix", "La Croix", "la croix"),
-  Parisien = c("@le_Parisien", "Le Parisien", "le parisien"),
-  LaProvence = c("La Provence", "@laprovence", "@LaProvence", "#laprovence", "#LaProvence"),
-  OuestFrance = c("@OuestFrance", "Ouest-France", "ouest-france"),
-  VoixDuNord = c("@lavoixdunord", "lavoixdunord.fr", "La Voix du Nord", "La Voix Du Nord", "la voix du nord", "Voix du Nord"),
-  LeProgres = c("@Le_Progres", "Le Progrès", "Le Progres", "Le progres", "leprogres.fr"),
-  SudOuest = c("Sud Ouest", "@SO_Paysbasque", "#SO_Paysbasque", "sudouest.fr"),
-  DauphineLibere = c("@ledauphine", "#dauphinelibere", "Le Dauphiné Libéré", "Le Dauphiné", "Dauphiné Libéré"),
-  EstRep = c("@lestrepublicain", "L'Est Républicain", "@LEstRepNancy"))
-```
-
 
 ```{r}
 number.of.probable.journalists <- nrow(probable.journalist)
