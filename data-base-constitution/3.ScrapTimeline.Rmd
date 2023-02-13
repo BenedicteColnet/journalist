@@ -17,40 +17,14 @@ library(Xplortext)
 library(DescTools)
 library(stringr)
 library(FactoMineR)
+
+source("./param.R")
 ```
 
 ```{r}
 library(rtweet)
 auth <- rtweet_app()
 # access_token <- "AAAAAAAAAAAAAAAAAAAAAIcKLwEAAAAA9Ve0dVTIyaecdx0XwYfOpoLYQek%3D9g08wPfTo0IQSPu16Ysj0aYpXkr11ETwzN9ZFhNcvCx3lC5RQl"
-```
-
-```{r}
-redactions <- Dict$new(
-  LeMonde = c("@LeMonde", "Le Monde", "@lemondefr", "le monde", "#LeMonde", "@lemonde_pol", "#lemonde", "@decodeurs", "lemonde"),
-  LeFig = c("@Le_Figaro", "@FigaroVox", "@Figaro", "Figaro", "FigaroVox", "#Figaro", "@Figaro_culture"),
-  Libe = c("@libe", "@Libe", "Libé", "Libération", "Liberation", "liberation"),
-  Mediapart = c("Mediapart", "@Mediapart", "Médiapart", "@mediapart", "@MediapartBlogs", "mediapart"),
-  Point = c("@LePoint", "Le Point", "Le point", "Point"),
-  Valeur = c("@Valeurs", "VA", "@VAplus_", "Valeurs actuelles"),
-  Obs = c("@lobs", "L'Obs", "Le nouvel observateur", "lenouvelobservateur"),
-  Marianne = c("@Marianne_TVoff", "@MarianneleMag", "Marianne"),
-  AFP = c("AFP", "@afpfr", "Agence France-Presse"),
-  Blast = c("@blast_france", "Blast", "BLAST"),
-  Cnews = c("@CNEWS", "@CNews", "Cnews", "CNEWS", "@cnews"),
-  Express = c("@LEXPRESS", "L'Express", "Express", "l'express"),
-  Inter = c("France Inter", "@franceinter", "@franceinfo", "Inter"),
-  Europe = c("@Europe1", "Europe 1", "europe1", "#Europe1"),
-  BFM = c("BFM", "@BFMTV", "BFMTV", "@bfmtv"),
-  Lacroix = c("@LaCroix", "LaCroix", "La Croix", "la croix"),
-  Parisien = c("@le_Parisien", "Le Parisien", "le parisien"),
-  LaProvence = c("La Provence", "@laprovence", "@LaProvence", "#laprovence", "#LaProvence"),
-  OuestFrance = c("@OuestFrance", "Ouest-France", "ouest-france"),
-  VoixDuNord = c("@lavoixdunord", "lavoixdunord.fr", "La Voix du Nord", "La Voix Du Nord", "la voix du nord", "Voix du Nord"),
-  LeProgres = c("@Le_Progres", "Le Progrès", "Le Progres", "Le progres", "leprogres.fr"),
-  SudOuest = c("Sud Ouest", "@SO_Paysbasque", "#SO_Paysbasque", "sudouest.fr"),
-  DauphineLibere = c("@ledauphine", "#dauphinelibere", "Le Dauphiné Libéré", "Le Dauphiné", "Dauphiné Libéré"),
-  EstRep = c("@lestrepublicain", "L'Est Républicain", "@LEstRepNancy"))
 ```
 
 Load the previous batches.
@@ -82,8 +56,8 @@ total <- total[total$has.redactions > 0,]
 
 ```{r}
 # initialisation
-timeline <- get_timeline("LeaSalame", n = 10, lang = "fr", include_rts = FALSE)
-timeline$screen_name <- rep("LeaSalame", nrow(timeline))
+timeline <- get_timeline("lemondefr", n = 1, lang = "fr", include_rts = FALSE)
+timeline$screen_name <- rep("LeMonde", nrow(timeline))
 ```
 
 
@@ -91,13 +65,13 @@ timeline$screen_name <- rep("LeaSalame", nrow(timeline))
 count = 0
 store = 10 
 # filling the table
-for (name in total$screen_name[3002:3010]){
+for (name in total$screen_name[2500:3000]){
   
   if (count < 501){
     
       count = count + 1
       print(paste0("doing ", name))
-      try(new_row <- get_timeline(name, n = 1000, lang = "fr", include_rts = FALSE), silent = TRUE)
+      try(new_row <- get_timeline(name, n = 5000, lang = "fr", include_rts = FALSE), silent = TRUE)
       new_row$screen_name <- rep(name, nrow(new_row))
       timeline <- rbind(timeline, new_row)
   
@@ -123,6 +97,46 @@ for (name in total$screen_name[3002:3010]){
 
 
 ```{r}
-save(timeline, file = "../data/timeline2800-3000-short.RData") 
+save(timeline, file = "../data/officials.RData") 
+```
+
+```{r}
+officials <- Dict$new(
+  LeMonde = c("lemondefr", "lemonde_pol"),
+  LeFig = c("Le_Figaro", "FigaroVox", "Figaro_culture"),
+  Libe = c("libe"),
+  Mediapart = c("Mediapart", "MediapartBlogs"),
+  Point = c("LePoint"),
+  Valeur = c("Valeurs", "VAplus_"),
+  Obs = c("lobs"),
+  Marianne = c("Marianne_TVoff", "MarianneleMag"),
+  AFP = c("afpfr"),
+  Blast = c("blast_france"),
+  Cnews = c("CNEWS"),
+  Express = c("LEXPRESS"),
+  Inter = c("franceinter", "franceinfo"),
+  Europe = c("Europe1"),
+  BFM = c("BFMTV"),
+  Lacroix = c("LaCroix"),
+  Parisien = c("le_Parisien"),
+  LaProvence = c("laprovence"),
+  OuestFrance = c("OuestFrance"),
+  VoixDuNord = c("lavoixdunord"),
+  LeProgres = c("Le_Progres"),
+  SudOuest = c("SO_Paysbasque"),
+  DauphineLibere = c("ledauphine"),
+  EstRep = c("lestrepublicain"))
+```
+
+
+```{r}
+for (journal in officials$keys){
+  for (id in officials[journal]){
+    print(paste0("doing ", id))
+    try(new_row <- get_timeline(id, n = 10000, lang = "fr", include_rts = FALSE), silent = TRUE)
+    new_row$screen_name <- rep(journal, nrow(new_row))
+    timeline <- rbind(timeline, new_row)
+  }
+}
 ```
 

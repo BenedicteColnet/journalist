@@ -1,6 +1,6 @@
 redactions <- Dict$new(
-  LeMonde = c("@LeMonde", "Le Monde", "@lemondefr", "le monde", "#LeMonde", "@lemonde_pol", "#lemonde", "@decodeurs", "Monde"),
-  LeFig = c("@Le_Figaro", "@FigaroVox", "@Figaro", "Figaro", "FigaroVox", "#Figaro"),
+  LeMonde = c("@LeMonde", "Le Monde", "@lemondefr", "le monde", "#LeMonde", "@lemonde_pol", "#lemonde", "@decodeurs", "Monde", "lemonde"),
+  LeFigaro = c("@Le_Figaro", "@FigaroVox", "@Figaro", "Figaro", "FigaroVox", "#Figaro"),
   Libe = c("@libe", "@Libe", "Libé", "Libération", "Liberation", "liberation"),
   Mediapart = c("Mediapart", "@Mediapart", "Médiapart", "@mediapart", "@MediapartBlogs", "mediapart"),
   Point = c("@LePoint", "Le Point", "Le point", "Point"),
@@ -22,5 +22,14 @@ redactions <- Dict$new(
   LeProgres = c("@Le_Progres", "Le Progrès", "Le Progres", "Le progres", "leprogres.fr"),
   SudOuest = c("Sud Ouest", "@SO_Paysbasque", "#SO_Paysbasque", "sudouest.fr"),
   DauphineLibere = c("@ledauphine", "#dauphinelibere", "Le Dauphiné Libéré", "Le Dauphiné", "Dauphiné Libéré"),
-  EstRep = c("@lestrepublicain", "L'Est Républicain", "@LEstRepNancy"))
-
+  EstRep = c("@lestrepublicain", "L'Est Républicain", "@LEstRepNancy"),
+  RTL = c("@RTLFrance", "@RTLSoir", "RTL", "#RTL"),
+  RMC = c("rmcinfo", "@RMCStorytv", "RMCInfo"),
+  FranceCulture = c("franceculture", "France Culture", "FC_actu", "Rédaction de France Culture", "@franceculture"),
+  Arte = c("ARTEfr", "ARTE"),
+  France5 = c("@France5tv", "France5tv", "#France5", "cavousf5", "@cavousf5", "#CàVous"),
+  TF1 = c("@TF1", "TF1", "#TF1", "#LesMatinsLCI", "LCI", "tf1", "@tf1"),
+  C8 = c("C8", "C8TV", "@C8TV", "@TPMP", "TPMP"),
+  France2 = c("@france2tv", "@QuelleEpoqueOff", "France2tv", "#France2"),
+  France3 = c("France3tv", "#France3"),
+  M6 = c("@M6", "M6", "#M6", "#ZoneInterdite"))
