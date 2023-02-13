@@ -48,7 +48,7 @@ resCA2=CA(distRedaction[which(media=="J"& rownames(distRedaction)!="Valeur"),whi
 plot(resCA2,invisible="col",cex=.7)
 ```
 
-# Comparaison des rédaction à partir du vocabulaire utilisé dans les tweets
+# Comparaison des rédactions à partir du vocabulaire utilisé dans les tweets
 
 ```{r}
 PathAdress <- "C:/Users/husson/AOBox/Travail/Bureau/journalist-main/data"
@@ -82,6 +82,6 @@ plot(resCA, invisible="col",cex=.5)
 ```{r}
 reshc <- HCPC(resCA,cluster.CA = "rows",graph=FALSE,nb.clust = -1,description=FALSE)
 oo = catdes(cbind.data.frame(reshc$data.clust[ncol(reshc$data.clus)],mot10[selectRedac,]),1,proba=0.001)
+for (i in 1:length(names(oo$quanti)))
+  names(oo$quanti)[i] <- paste(rownames(reshc$data.clust)[which(reshc$data.clust[ncol(reshc$data.clus)]==i)],collapse="_")
 ```
-
-

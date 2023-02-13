@@ -1,0 +1,112 @@
+---
+title: "Analyse des tweets"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FactoMineR)
+```
+
+# Comparaison des rédactions à partir du vocabulaire utilisé dans les tweets
+
+```{r}
+PathAdress <- "C:/Users/husson/AOBox/Travail/Bureau/journalist-main/data"
+MotJournaux <- read.table(paste0(PathAdress,"/count-lemme-journal.csv"),header = TRUE,sep=",",encoding="UTF-8",row.names=1)
+MotJournaux <- read.table(paste0(PathAdress,"/count-mot-journal.csv"),header = TRUE,sep=",",encoding="UTF-8",row.names=1)
+rownames(MotJournaux) <- MotJournaux[,1]
+MotJournaux <- t(MotJournaux[,-1])
+media <- c("J","TV","TV","TV","J","J","Radio","J","Radio","J","J","J","J","J","J","J","J","J","J","J","J","J","J","J")
+national <- rep("y",nrow(MotJournaux))
+national[c(5,6,11,14,19,20,22,24)] <- "n"
+```
+
+```{r}
+nbfois <- 10
+mot10 <- MotJournaux[,which(apply(MotJournaux,2,sum)>=nbfois)] ## mot cités plus de nbfois
+nbredac <- 2
+selectRedac <- which(national=="y")
+selectRedac <- setdiff(selectRedac,which(rownames(mot10)%in%c("Valeur","Lacroix"))) ## ces 2 journaux sont très particuliers
+matMot <- mot10[selectRedac,]
+
+matMot <- matMot[,which(apply(matMot,2,sum)>0)] ## supprime mots non utilisés
+selectMots <- which(apply(matMot>0,2,sum)>=nbredac)
+matMot <- matMot[,selectMots] ## mots cités par au moins nbredac rédactions
+```
+
+```{r}
+resCA <- CA(matMot,graph=FALSE)
+plot(resCA, invisible="col",cex=.5)
+```
+Classification des médias et caractérisation des classes par les mots (la caractérisation prend du temps au niveau des calculs)
+```{r}
+reshc <- HCPC(resCA,cluster.CA = "rows",graph=FALSE,nb.clust = -1,description=FALSE)
+## oo = catdes(cbind.data.frame(reshc$data.clust[ncol(reshc$data.clus)],mot10[selectRedac,]),1,proba=0.001)
+## for (i in 1:length(names(oo$quanti)))
+##   names(oo$quanti)[i] <- paste(rownames(reshc$data.clust)[which(reshc$data.clust[ncol(reshc$data.clus)]==i)],collapse="_")
+```
+
+```{r}
+theme = read.table("../data/themes.csv",header=TRUE,sep=";",quote="£",encoding="UTF-8")
+for (i in 1:ncol(theme)) theme[,i]=tolower(theme[,i])
+```
+Comptage des mots par thème pour voir quels thèmes sont plus spécifiquement abordés par certaines rédactions
+
+```{r}
+liste_theme <- (1:ncol(theme))[-which(colnames(theme)=="Pays")]
+mot_par_theme <- mot10[,liste_theme,drop=FALSE] ## initialisation
+for (i in liste_theme){
+  mot_par_theme[,i] <- apply(mot10[,which(colnames(mot10)%in%theme[,i])],1,sum)
+}
+colnames(mot_par_theme) <- colnames(theme)[liste_theme]
+liste_mots <- unique(unlist(theme))
+resCA <- CA(cbind.data.frame(mot_par_theme,mot10[,which(colnames(mot10)%in%liste_mots)]),graph=FALSE,col.sup=(ncol(mot_par_theme)+1):(ncol(mot_par_theme)+ncol(mot10[,which(colnames(mot10)%in%liste_mots)])))
+plot(resCA,invisible="col.sup",cex=.8)
+```
+
+```{r}
+for (i in 1:ncol(theme)){
+  resCA <- CA(mot10[-which((national!="y")|(rownames(mot10)=="Blast")),which(colnames(mot10)%in%theme[,i])],graph=FALSE)
+  print(plot(resCA,cex=.8,title=names(theme)[i]))
+}
+```
+
+AFC sur qq mots en écologie - environnement
+```{r}
+resCA <- CA(mot10[-which((national!="y")|(rownames(mot10)=="Blast")),which(colnames(mot10)%in%theme$Écologie)],graph=FALSE)
+plot(resCA, cex=.7)
+```
+
+AFC sur qq mots en économie
+```{r}
+resCA <- CA(mot10[,which(colnames(mot10)%in%theme$Transport)],graph=FALSE)
+plot(resCA, cex=.7)
+```
+
+```{r}
+mot_par_theme <- mot10[,1:ncol(theme),drop=FALSE] ## initialisation
+colnames(mot_par_theme) <- colnames(theme)
+liste_mots <- NULL
+for (i in 1:ncol(theme)){
+  mot_par_theme[,i] <- apply(mot10[,which(colnames(mot10)%in%theme[,i])],1,sum)
+  liste_mots <- union(liste_mots,theme[,i])
+}
+resCA <- CA(cbind.data.frame(mot_par_theme,mot10[,which(colnames(mot10)%in%liste_mots)]),graph=FALSE,col.sup=(ncol(mot_par_theme)+1):(ncol(mot_par_theme)+ncol(mot10[,which(colnames(mot10)%in%liste_mots)])))
+plot(resCA,invisible="col.sup",cex=.8)
+```
+AFM avec les thèmes
+```{r}
+tabdon <- mot10
+indMotEcolo <- which(colnames(tabdon)%in%theme$Écologie)
+indMotEcono <- which(colnames(tabdon)%in%theme$Economie)
+indMotLaic <- which(colnames(tabdon)%in%theme$Laicité)
+indMotPol <- which(colnames(tabdon)%in%theme$Politique)
+indMotCovid <- which(colnames(tabdon)%in%theme$Covid)
+indMotSport <- which(colnames(tabdon)%in%theme$Sport)
+indMotTransport <- which(colnames(tabdon)%in%theme$Transport)
+resMFA <- MFA(tabdon[-which((national!="y")|(rownames(mot10)=="Blast")),c(indMotEcolo,indMotEcono,indMotLaic,indMotPol,indMotCovid,indMotSport,indMotTransport)],type=rep("f",7),group=c(length(indMotEcolo),length(indMotEcono),length(indMotLaic),length(indMotPol),length(indMotCovid),length(indMotSport),length(indMotTransport)),name.group=c("Ecolo","Economie","Laïcité","Politique","Covid","Sport","Transport"),graph=FALSE)
+plot(resMFA, cex=.5,habillage = "group",partial = "all")
+plot(resMFA, cex=.5,choix="freq")
+```
+
