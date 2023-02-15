@@ -2,9 +2,15 @@ redactions <- Dict$new(
   LeMonde = c("@LeMonde", "Le Monde", "@lemondefr", "le monde", "#LeMonde", "@lemonde_pol", "#lemonde", "@decodeurs", "Monde", "lemonde"),
   LeFigaro = c("@Le_Figaro", "@FigaroVox", "@Figaro", "Figaro", "FigaroVox", "#Figaro"),
   Libe = c("@libe", "@Libe", "Libé", "Libération", "Liberation", "liberation"),
+  LesEchos = c("@LesEchos", "LesEchos", "@LesEchosWeekEnd", "LesEchosWeekEnd", "Les Échos", "Les Echos", "LesÉchos"),
   Mediapart = c("Mediapart", "@Mediapart", "Médiapart", "@mediapart", "@MediapartBlogs", "mediapart"),
   Point = c("@LePoint", "Le Point", "Le point", "Point"),
+  LOpinion = c("@lopinion_fr", "l'Opinion", "l'opinion", "LOpinion", "lopinion", "lopinion_fr"),
+  JDD = c("leJDD", "le JDD", "JDD", "#JDD", "Le JDD", "Journal du Dimanche", "journal du dimanche"),
+  LaTribune = c("LaTribune", "@LaTribune", "La Tribune", "latribune"),
+  Atlantico = c("atlantico_fr", "@atlantico_fr", "Atlantico", "atlantico.fr", "#Atlantico"),
   Valeur = c("@Valeurs", "VA", "@VAplus_", "Valeurs actuelles"),
+  LHumanite = c("humanite_fr", "@humanite_fr", "L'Humanité", "L'Huma", "l'huma", "humanite.fr", "l'Humanite", "l'Huma"),
   Obs = c("@lobs", "L'Obs", "Le nouvel observateur", "lenouvelobservateur"),
   Marianne = c("@Marianne_TVoff", "@MarianneleMag", "Marianne"),
   AFP = c("AFP", "@afpfr", "Agence France-Presse"),
@@ -25,6 +31,7 @@ redactions <- Dict$new(
   EstRep = c("@lestrepublicain", "L'Est Républicain", "@LEstRepNancy"),
   RTL = c("@RTLFrance", "@RTLSoir", "RTL", "#RTL"),
   RMC = c("rmcinfo", "@RMCStorytv", "RMCInfo"),
+  SudRadio = c("SudRadio", "@SudRadio", "Sud Radio", "sud radio", "#SudRadio", "SudRadio"),
   FranceCulture = c("franceculture", "France Culture", "FC_actu", "Rédaction de France Culture", "@franceculture"),
   Arte = c("ARTEfr", "ARTE"),
   France5 = c("@France5tv", "France5tv", "#France5", "cavousf5", "@cavousf5", "#CàVous"),
@@ -32,4 +39,8 @@ redactions <- Dict$new(
   C8 = c("C8", "C8TV", "@C8TV", "@TPMP", "TPMP"),
   France2 = c("@france2tv", "@QuelleEpoqueOff", "France2tv", "#France2"),
   France3 = c("France3tv", "#France3"),
-  M6 = c("@M6", "M6", "#M6", "#ZoneInterdite"))
+  M6 = c("@M6", "M6", "#M6", "#ZoneInterdite"),
+  ArretSurImages = c("arretsurimages", "@arretsurimages", "Arrêt sur images", "arrêt sur images", "arretsurimages.net"))
+
+
+
