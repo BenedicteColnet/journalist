@@ -1,4 +1,6 @@
-Tweetshiny <- function(nbfois=10, nbredac=2, global = TRUE, liste_theme="all"){
+Tweetshiny <- function(nbfois=10, nbredac=2, global = TRUE, liste_theme="all",select_redac="all"){
+# select_redac peut prendre "all", "Media=='Radio'","Media=='TV'","Media==Ecrit", "Audience==National", "Audience==Regional" ou des mixtes
+
   library(FactoMineR)
   G <- .GlobalEnv
   assign("objTweetshiny",ls(all.names=TRUE, envir=G),envir=G)
@@ -6,16 +8,18 @@ Tweetshiny <- function(nbfois=10, nbredac=2, global = TRUE, liste_theme="all"){
 PathAdress <- "C:/Users/husson/AOBox/Travail/Bureau/journalist-main/data"
 MotJournaux <- read.table(paste0(PathAdress,"/count-lemme-journal.csv"),header = TRUE,sep=",",encoding="UTF-8",row.names=1)
 MotJournaux <- read.table(paste0(PathAdress,"/count-mot-journal.csv"),header = TRUE,sep=",",encoding="UTF-8",row.names=1)
+
+
 rownames(MotJournaux) <- MotJournaux[,1]
 MotJournaux <- t(MotJournaux[,-1])
-# media <- c("J","TV","TV","TV","J","J","Radio","J","Radio","J","J","J","J","J","J","J","J","J","J","J","J","J","J","J")
-# national <- rep("y",nrow(MotJournaux))
-# national[c(5,6,11,14,19,20,22,24)] <- "n"
 
 mot10 <- MotJournaux[,which(apply(MotJournaux,2,sum)>=nbfois)] ## mot cités plus de nbfois
-# selectRedac <- which(national=="y")
-# selectRedac <- setdiff(selectRedac,which(rownames(mot10)%in%c("Valeur","Lacroix"))) ## ces 2 journaux sont très particuliers
-# matMot <- mot10[selectRedac,]
+
+ desc_redaction = read.table("../data/desc_redaction.csv",header=TRUE,sep=";",quote="£",encoding="UTF-8",row.names=1)
+print(rownames(subset(desc_redaction,eval(parse(text=select_redac)))))
+if (select_redac!="all"){
+   mot10 <- mot10[rownames(subset(desc_redaction,eval(parse(text=select_redac)))),]
+ }
 
 # matMot <- matMot[,which(apply(matMot,2,sum)>0)] ## supprime mots non utilisés
 # selectMots <- which(apply(matMot>0,2,sum)>=nbredac)
@@ -23,6 +27,7 @@ mot10 <- MotJournaux[,which(apply(MotJournaux,2,sum)>=nbfois)] ## mot cités plu
 
 # resCA <- CA(matMot,graph=FALSE)
 # plot(resCA, invisible="col",cex=.5)
+
 
 
 theme = read.table("../data/themes.csv",header=TRUE,sep=";",quote="£",encoding="UTF-8")
