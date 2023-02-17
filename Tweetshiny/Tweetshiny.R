@@ -16,7 +16,6 @@ MotJournaux <- t(MotJournaux[,-1])
 mot10 <- MotJournaux[,which(apply(MotJournaux,2,sum)>=nbfois)] ## mot cités plus de nbfois
 
  desc_redaction = read.table("../data/desc_redaction.csv",header=TRUE,sep=";",quote="£",encoding="UTF-8",row.names=1)
-print(rownames(subset(desc_redaction,eval(parse(text=select_redac)))))
 if (select_redac!="all"){
    mot10 <- mot10[rownames(subset(desc_redaction,eval(parse(text=select_redac)))),]
  }
